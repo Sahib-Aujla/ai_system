@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import { sendMail } from "./nodemailer.js";
 import * as readLineSync from "readline-sync";
-import { getFileContent } from "./fileHandle.js";
+import { getFileContent,writeFileContent } from "./fileHandle.js";
 dotenv.config();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -72,6 +72,25 @@ const tools = [
   },
   {
     type: "function",
+    function:{
+      name:"writeFileContent",
+      description:"Create a file with the provided content",
+      parameters:{
+        type: "object",
+        properties:{
+          file:{
+            type:"string"
+          },
+          content:{
+            type:"string"
+          }
+        },
+      },
+      required:["file","content"]
+    }
+  },
+  {
+    type: "function",
     function: {
       name: "sendMail",
       description: "Send the mail to the provided email address",
@@ -99,6 +118,7 @@ const availableTools = {
   getLocation,
   sendMail,
   getFileContent,
+  writeFileContent
 };
 
 const messages = [
@@ -108,6 +128,7 @@ const messages = [
       If a city is provided by the user, use your intellect to get longitude and latitude and use getWeather to get the weather
       For sending email, make the content in html and send it using the provided tool.
       If the user asks to tell me the contents of the file with the name then use the provided tool first to get its content
+      If the user asks to create a file, then use the provided tool and send the file name with the extension of the file as well.
     `,
   },
 ];
