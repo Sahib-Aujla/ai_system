@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
   maxConnections: 1,
 });
 
-export async function sendEmail(email, subject, content) {
+export async function sendMail(email, subject, content) {
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
