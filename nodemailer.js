@@ -3,19 +3,19 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  pool: true,
-  service: "hotmail",
+  
+  host: "smtp-relay.brevo.com",
   port: 587,
+  secure:false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASSWORD,
   },
-  maxConnections: 1,
 });
 
 export async function sendMail(email, subject, content) {
   const mailOptions = {
-    from: process.env.EMAIL,
+    from:  process.env.EMAIL,
     to: email,
     html: content,
     subject: subject,

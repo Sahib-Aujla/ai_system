@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
-import { sendMail } from "./nodemailer";
+import { sendMail } from "./nodemailer.js";
+import * as readLineSync from "readline-sync";
 dotenv.config();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,7 +11,7 @@ const openai = new OpenAI({
 async function getLocation() {
   const response = await fetch("https://ipapi.co/json/");
   const locationData = await response.json();
-  
+
   return locationData;
 }
 
@@ -53,30 +54,33 @@ const tools = [
     },
   },
   {
-    type:"function",
-    function:{
-      name:"sendMail",
-      description:"Send the mail to the provided email address",
-      parameters:{
-        email:{
-          type:"string"
+    type: "function",
+    function: {
+      name: "sendMail",
+      description: "Send the mail to the provided email address",
+      parameters: {
+        type: "object",
+        properties: {
+          email: {
+            type: "string",
+          },
+          subject: {
+            type: "string",
+          },
+          content: {
+            type: "string",
+          },
         },
-        subject:{
-          type:"string"
-        },
-        message:{
-          type:"string"
-        }
       },
-      required:["email","subject","message"]
-    }
-  }
+      required: ["email", "subject", "content"],
+    },
+  },
 ];
 
 const availableTools = {
   getCurrentWeather,
   getLocation,
-  sendMail
+  sendMail,
 };
 
 const messages = [
@@ -84,6 +88,7 @@ const messages = [
     role: "system",
     content: `You are a helpful assistant. Only use the functions you have been provided with.
       If a city is provided by the user, use your intellect to get longitude and latitude and use getWeather to get the weather
+      For sending email, make the content in html 
     `,
   },
 ];
@@ -122,6 +127,7 @@ async function agent(userInput) {
                 )}
                 `,
       });
+      if( message.tool_calls[0].function.name==='sendMail')break;;
     } else if (finish_reason === "stop") {
       messages.push(message);
       return message.content;
@@ -131,8 +137,13 @@ async function agent(userInput) {
 }
 
 
-const response = await agent(
-  "Please suggest some activities based on City Fatehgarh Sahib, Punjab and the weather."
-);
+while(true){
+  const val=readLineSync.question('>>');
+  if(val==='q')break;
+  const response = await agent(
+    val
+  );
+  
+  console.log("response:", response);
+}
 
-console.log("response:", response);
