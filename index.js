@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import { sendMail } from "./nodemailer.js";
 import * as readLineSync from "readline-sync";
+import { getFileContent } from "./fileHandle.js";
 dotenv.config();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -56,6 +57,22 @@ const tools = [
   {
     type: "function",
     function: {
+      name: "getFileContent",
+      description: "Get the file content in the current folder by filename",
+      parameters: {
+        type: "object",
+        properties: {
+          file: {
+            type: "string",
+          },
+        },
+      },
+      required: ["file"],
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "sendMail",
       description: "Send the mail to the provided email address",
       parameters: {
@@ -81,6 +98,7 @@ const availableTools = {
   getCurrentWeather,
   getLocation,
   sendMail,
+  getFileContent,
 };
 
 const messages = [
@@ -89,6 +107,7 @@ const messages = [
     content: `You are a helpful assistant. Only use the functions you have been provided with.
       If a city is provided by the user, use your intellect to get longitude and latitude and use getWeather to get the weather
       For sending email, make the content in html and send it using the provided tool.
+      If the user asks to tell me the contents of the file with the name then use the provided tool first to get its content
     `,
   },
 ];
